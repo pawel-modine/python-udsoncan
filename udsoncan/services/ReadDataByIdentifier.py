@@ -74,7 +74,7 @@ class ReadDataByIdentifier(BaseService):
 
         did_reading_all_data = None
         for did in didlist:
-            if did not in didconfig:    # Already checked in check_did_config. Paranoid check
+            if not didconfig.get(did):    # Already checked in check_did_config. Paranoid check
                 raise ConfigError(key=did, msg='Actual data identifier configuration contains no definition for data identifier 0x%04x' % did)
 
             codec = make_did_codec_from_config(didconfig[did])  # Make sure the config is good before sending the request. This method can raise.
@@ -141,11 +141,12 @@ class ReadDataByIdentifier(BaseService):
                 raise InvalidResponseException(response, "Response given by server is incomplete.")
 
             did = struct.unpack('>H', response.data[offset:offset + 2])[0]  # Get the DID number
-            if did == 0 and did not in didconfig and tolerate_zero_padding:  # We read two zeros and that is not a DID bu we accept that. So we're done.
+            # We read two zeros and that is not a DID bu we accept that. So we're done.
+            if did == 0 and didconfig.get(did) is None and tolerate_zero_padding:
                 if response.data[offset:] == b'\x00' * (len(response.data) - offset):
                     break
 
-            if did not in didconfig:  # Already checked in check_did_config. Paranoid check
+            if not didconfig.get(did):  # Already checked in check_did_config. Paranoid check
                 raise ConfigError(key=did, msg='Actual data identifier configuration contains no definition for data identifier 0x%04x' % did)
 
             codec = make_did_codec_from_config(didconfig[did])

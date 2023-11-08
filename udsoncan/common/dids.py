@@ -180,7 +180,7 @@ def check_did_config(didlist: Union[int, List[int]], didconfig: Optional[Dict]) 
 
     assert didconfig is not None
     for did in didlist:
-        if did not in didconfig:
+        if not didconfig.get(did):
             raise ConfigError(did, msg='Actual data identifier configuration contains no definition for data identifier 0x%04x' % did)
 
     return cast(DIDConfig, didconfig)
